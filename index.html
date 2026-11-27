@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiaong Water District — New Connection System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #edf1f5;
+    margin: 0;
+    color: #111827;
+  }
+
+  /* Custom UI Notification Toast / Modal */
+  #toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    padding: 12px 18px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    animation: slideIn 0.25s ease-out;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* =========================================================
+     DOCUMENT 1: SERVICE APPLICATION AND CONSTRUCTION FORM (A4)
+     ========================================================= */
+  .sheet-app {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 2mm;
+    border: 1px solid #333;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    font: 13px Arial, sans-serif;
+    color: #111;
+  }
+  .sheet-app .header {
+    text-align: center;
+    height: 19mm;
+    border-bottom: 1.4px solid #111;
+    padding: 2mm 0 1mm;
+  }
+  .sheet-app .header h2 { font-size: 15px; margin: 0 0 1px; letter-spacing: 0.2px; font-weight: bold; }
+  .sheet-app .header .place { font-size: 12px; margin: 0 0 2px; }
+  .sheet-app .header h3 { font-size: 14px; margin: 0; font-weight: bold; }
+  .sheet-app .top {
+    display: grid;
+    grid-template-columns: 43% 57%;
+    min-height: 77mm;
+    border-bottom: 1.4px solid #111;
+  }
+  .sheet-app .lefttop {
+    border-right: 1.4px solid #111;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+  }
+  .sheet-app .applicant-lines { height: 16mm; line-height: 1.8; }
+  .sheet-app .linefield { display: flex; align-items: baseline; gap: 4px; margin-bottom: 2px; }
+  .sheet-app .linefield span.val {
+    flex: 1;
+    border-bottom: 1px solid #111;
+    padding: 0 3px;
+    min-height: 16px;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .sheet-app .declaration {
+    border-top: 1px solid #111;
+    padding: 4px 2px;
+    line-height: 1.45;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .sheet-app .declaration-body {
+    white-space: pre-wrap;
+    font: 12.5px Arial, sans-serif;
+    line-height: 1.4;
+    min-height: 35mm;
+  }
+  .sheet-app .signature {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 4px;
+  }
+  .sheet-app .signature .sig-val {
+    border-bottom: 1px solid #111;
+    width: 62%;
+    min-height: 18px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .sheet-app .signature .date-val {
+    border-bottom: 1px solid #111;
+    width: 34%;
+    min-height: 18px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .sheet-app .siglabel { font-weight: bold; text-align: center; margin-top: 2px; font-size: 12px; }
+  .sheet-app .righttop { display: grid; grid-template-rows: 25mm 1fr; }
+  .sheet-app .investigation { padding: 3px 6px; border-bottom: 1.4px solid #111; }
+  .sheet-app .investigation-title { text-align: center; margin: 1px 0 6px; font-weight: bold; }
+  .sheet-app .investigation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+  .sheet-app .checkline { display: flex; align-items: center; gap: 6px; }
+  .sheet-app .box-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #111;
+    font-weight: bold;
+    font-size: 11px;
+  }
+  .sheet-app .investigated { margin-top: 6px; display: flex; align-items: flex-end; gap: 5px; }
+  .sheet-app .investigated span.val {
+    flex: 1;
+    border-bottom: 1px solid #111;
+    min-height: 16px;
+    padding: 0 3px;
+    font-weight: bold;
+  }
+  .sheet-app .chargepay { display: grid; grid-template-columns: 55% 45%; }
+  .sheet-app .charges { padding: 5px 6px; border-right: 1.4px solid #111; }
+  .sheet-app .payments { padding: 5px 6px; }
+  .sheet-app .subhead { text-align: center; font-weight: bold; margin: 2px 0 8px; font-size: 12px; }
+  .sheet-app .charge-row {
+    display: grid;
+    grid-template-columns: 1fr 12px 20mm;
+    align-items: center;
+    margin: 5px 0;
+  }
+  .sheet-app .charge-row span.val {
+    border-bottom: 1px solid #111;
+    padding: 0 2px;
+    text-align: right;
+    min-height: 16px;
+    font-size: 12px;
+  }
+  .sheet-app .total { font-weight: bold; margin-top: 8px; }
+  .sheet-app .payments .payfield { margin: 12px 0 20px; }
+  .sheet-app .payfield span.val {
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid #111;
+    min-height: 18px;
+    padding: 2px 3px 0;
+    font-weight: bold;
+  }
+  .sheet-app .middle {
+    display: grid;
+    grid-template-columns: 43% 27% 30%;
+    min-height: 82mm;
+    border-bottom: 1.4px solid #111;
+  }
+  .sheet-app .contact { padding: 5px 5px; border-right: 1.4px solid #111; }
+  .sheet-app .contact .contactrow { margin: 7px 0; display: flex; align-items: flex-end; gap: 3px; }
+  .sheet-app .contactrow label { white-space: nowrap; font-weight: bold; font-size: 11.5px; }
+  .sheet-app .contactrow span.val {
+    border-bottom: 1px solid #111;
+    min-width: 0;
+    flex: 1;
+    min-height: 16px;
+    padding: 0 2px;
+    font-size: 12px;
+  }
+  .sheet-app .contact .landmark { display: block; margin-top: 8px; font-weight: bold; font-size: 11.5px; }
+  .sheet-app .contact .landmark-val {
+    width: 100%;
+    min-height: 22mm;
+    border-bottom: 1px solid #111;
+    padding-top: 4px;
+    white-space: pre-wrap;
+    font-size: 12px;
+  }
+  .sheet-app .record { padding: 5px 5px; border-right: 1.4px solid #111; position: relative; }
+  .sheet-app .record-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 11px;
+    line-height: 1.25;
+    margin: 1px 0 8px;
+  }
+  .sheet-app .record .recordfield { display: flex; align-items: flex-end; gap: 3px; margin: 6px 0; }
+  .sheet-app .recordfield label { white-space: nowrap; font-size: 11.5px; }
+  .sheet-app .recordfield span.val {
+    min-width: 0;
+    flex: 1;
+    border-bottom: 1px solid #111;
+    min-height: 16px;
+    padding: 0 2px;
+    font-weight: bold;
+    font-size: 11.5px;
+  }
+  .sheet-app .checkedby { font-weight: bold; margin-top: 8px; font-size: 11.5px; }
+  .sheet-app .record .signoff {
+    position: absolute;
+    bottom: 6px;
+    left: 4px;
+    right: 4px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .sheet-app .signoff .person { font-weight: bold; margin: 0 0 2px; font-size: 11.5px; }
+  .sheet-app .approvals { display: grid; grid-template-rows: 1fr 1fr; }
+  .sheet-app .approval { padding: 5px 5px; text-align: center; }
+  .sheet-app .approval:first-child { border-bottom: 1.4px solid #111; }
+  .sheet-app .approval .role { font-weight: bold; font-size: 10px; margin: 2px 0 12px; }
+  .sheet-app .approval .person { font-weight: bold; margin: 0 0 2px; font-size: 11.5px; }
+  .sheet-app .approval .position { font-size: 10px; margin: 0 0 4px; line-height: 1.25; }
+  .sheet-app .approval .rec-date {
+    width: 100%;
+    border-bottom: 1px solid #111;
+    text-align: center;
+    min-height: 16px;
+    font-size: 11.5px;
+  }
+  .sheet-app .approval .approved { font-weight: bold; margin: 4px 0 12px; font-size: 11px; }
+  .sheet-app .approval .details { text-align: left; line-height: 1.65; margin-top: 8px; font-size: 11.5px; }
+  .sheet-app .approval .details span.val {
+    display: inline-block;
+    width: 65%;
+    border-bottom: 1px solid #111;
+    min-height: 15px;
+    padding: 0 2px;
+  }
+  .sheet-app .sketch { height: 88mm; padding: 5px 6px; }
+  .sheet-app .sketch-title { font-weight: bold; font-size: 11px; margin: 2px 0 6px; }
+  .sheet-app .sketch-body {
+    width: 100%;
+    height: 75mm;
+    white-space: pre-wrap;
+    font: 13px Arial, sans-serif;
+  }
+
+  /* =========================================================
+     DOCUMENT 2: CONTRACT FOR WATER SERVICE INSTALLATION (1 PAGE)
+     ========================================================= */
+  .sheet-contract {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 10mm 15mm;
+    background: #ffffff;
+    margin: 0 auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 11pt;
+    line-height: 1.22;
+    color: #111;
+    box-sizing: border-box;
+  }
+  .sheet-contract .contract-header {
+    text-align: center;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .sheet-contract .contract-header h2 { font-size: 15pt; margin: 0; }
+  .sheet-contract .contract-header h3 { font-size: 13pt; margin: 8px 0 0; }
+  .sheet-contract .details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+    margin-bottom: 12px;
+  }
+  .sheet-contract .detail {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    min-height: 18px;
+  }
+  .sheet-contract .detail label { white-space: nowrap; }
+  .sheet-contract .detail span {
+    flex: 1;
+    border-bottom: 1px solid #000;
+    min-height: 17px;
+    padding-left: 5px;
+    font-weight: bold;
+  }
+  .sheet-contract .paragraph {
+    text-align: justify;
+    text-indent: 30px;
+    margin: 8px 0;
+  }
+  .sheet-contract .clauses {
+    text-align: justify;
+    padding-left: 28px;
+    line-height: 1.22;
+  }
+  .sheet-contract .clauses p { margin: 5px 0; }
+  .sheet-contract .law { margin-top: 12px; text-align: center; }
+  .sheet-contract .law h4 { margin: 3px 0; font-weight: bold; font-size: 11pt; }
+  .sheet-contract .law-text {
+    text-align: justify;
+    margin-top: 6px;
+    text-indent: 28px;
+    line-height: 1.2;
+    font-size: 10.5pt;
+  }
+  .sheet-contract .witness-date { margin-top: 12px; text-align: justify; }
+  .sheet-contract .signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px 40px;
+    margin-top: 28px;
+    text-align: center;
+  }
+  .sheet-contract .signature-line { border-top: 1px solid #000; padding-top: 4px; }
+  .sheet-contract .witnesses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  /* =========================================================
+     DOCUMENT 3: WAIVER FOR DISCONNECTION OF WATER SERVICE
+     ========================================================= */
+  .sheet-waiver {
+    background: #ffffff;
+    width: 8.5in;
+    min-height: 13in;
+    padding: 0.35in 0.45in;
+    margin: 0 auto;
+    color: #000;
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.25;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+  .sheet-waiver .header {
+    text-align: center;
+    position: relative;
+    min-height: 88px;
+  }
+  .sheet-waiver .twd-logo {
+    position: absolute;
+    left: 4px;
+    top: -4px;
+    width: 105px;
+    height: 105px;
+    object-fit: contain;
+  }
+  .sheet-waiver .twd-logo-fallback {
+    position: absolute;
+    left: 4px;
+    top: 0;
+    width: 88px;
+    height: 88px;
+    border: 2px solid #0878b9;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: #0878b9;
+    padding: 6px;
+    line-height: 1.15;
+  }
+  .sheet-waiver .header h2 { font-size: 22px; margin: 0; font-weight: bold; }
+  .sheet-waiver .header p { font-size: 12px; margin: 2px; }
+  .sheet-waiver .doc-title { text-align: center; font-weight: bold; margin: 12px 0 16px; }
+  .sheet-waiver .doc-title h3 { font-size: 16px; margin: 0; }
+  .sheet-waiver .doc-title p { margin: 2px; font-size: 13px; }
+  .sheet-waiver .body-text { text-align: justify; line-height: 1.38; }
+  .sheet-waiver .body-text p { margin: 8px 0; }
+  .sheet-waiver .body-text ol { margin: 8px 0; padding-left: 24px; }
+  .sheet-waiver .body-text li { margin: 5px 0; }
+  .sheet-waiver .fill {
+    display: inline-block;
+    min-width: 120px;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    padding: 0 6px;
+    font-weight: bold;
+    min-height: 18px;
+  }
+  .sheet-waiver .fill.long { min-width: 230px; }
+  .sheet-waiver .fill.medium { min-width: 170px; }
+  .sheet-waiver .policy {
+    border: 2px solid #000;
+    padding: 8px 10px;
+    margin-top: 22px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .sheet-waiver .policy h3 { text-align: center; margin: 0 0 5px; font-size: 18px; font-weight: bold; }
+  .sheet-waiver .policy p { margin: 5px 0; }
+  .sheet-waiver .policy table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .sheet-waiver .policy td { padding: 1px 4px; vertical-align: top; }
+  .sheet-waiver .signature {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 25px;
+    text-align: center;
+  }
+  .sheet-waiver .signature div { flex: 1; }
+  .sheet-waiver .sign-line {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    min-height: 25px;
+    font-size: 13px;
+  }
+  .sheet-waiver .witness { margin-top: 18px; width: 50%; text-align: center; }
+  .sheet-waiver .manager {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 18px;
+    font-size: 13px;
+  }
+  .sheet-waiver .manager div { width: 48%; }
+
+  /* =========================================================
+     PRINT MEDIA RULES
+     ========================================================= */
+  @media print {
+    @page {
+      size: 8.5in 13in;
+      margin: 4mm;
+    }
+    body {
+      background: #ffffff !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .no-print {
+      display: none !important;
+    }
+    .print-wrapper {
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+    .tab-panel {
+      display: none !important;
+    }
+    .tab-panel.print-active {
+      display: block !important;
+    }
+    .sheet-app, .sheet-contract, .sheet-waiver {
+      box-shadow: none !important;
+      margin: 0 auto !important;
+    }
+    .print-all-mode .tab-panel.doc-panel {
+      display: block !important;
+      page-break-after: always;
+    }
+    .print-all-mode .tab-panel.doc-panel:last-child {
+      page-break-after: auto;
+    }
+    
+  }
+</style>
+</head>
+<body>
+
+<div id="toast-container" class="no-print"></div>
+
+<!-- CONFIRMATION MODAL (Replaces native confirm()) -->
+<div id="confirm-modal" class="no-print fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+    <h3 id="confirm-title" class="text-lg font-bold text-slate-900 mb-2">Confirm Action</h3>
+    <p id="confirm-message" class="text-sm text-slate-600 mb-6">Are you sure you want to proceed?</p>
+    <div class="flex justify-end gap-3">
+      <button id="confirm-cancel" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">Cancel</button>
+      <button id="confirm-ok" class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY TOP NAVIGATION BAR -->
+<header class="no-print sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
+  <div class="max-w-7xl mx-auto px-4 py-3">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-[#0878b9] text-white flex items-center justify-center font-bold text-sm shrink-0">
+          TWD
+        </div>
+        <div>
+          <h1 class="text-[#0878b9] font-bold text-base sm:text-lg leading-tight">TIAONG WATER DISTRICT — NEW CONNECTION FORM</h1>
+  
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="printAllDocuments()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Print All 3 Forms
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="mt-3 flex flex-wrap gap-2" aria-label="Document navigation">
+      <button class="tab-btn active px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition bg-[#0878b9] text-white shadow-xs" data-target="tab-entry" onclick="switchTab('tab-entry')">
+        1. Unified Data Entry
+      </button>
+      <button class="tab-btn px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-100 text-slate-700 hover:bg-slate-200" data-target="tab-application" onclick="switchTab('tab-application')">
+        2. Service Application
+      </button>
+      <button class="tab-btn px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-100 text-slate-700 hover:bg-slate-200" data-target="tab-contract" onclick="switchTab('tab-contract')">
+        3. Contract for Water Service
+      </button>
+      <button class="tab-btn px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition bg-slate-100 text-slate-700 hover:bg-slate-200" data-target="tab-waiver" onclick="switchTab('tab-waiver')">
+        4. Waiver for Disconnection
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- MAIN CONTENT AREA -->
+<main class="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+
+  <!-- =========================================================
+       TAB 1: UNIFIED DATA ENTRY & CUSTOMER RECORDS
+       ========================================================= -->
+  <section id="tab-entry" class="tab-panel block no-print">
+
+    <!-- Action Bar -->
+    <div class="bg-white rounded-xl p-4 mb-6 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="saveUnifiedRecord()" class="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition shadow-xs">
+          SAVE CUSTOMER RECORD
+        </button>
+        <button onclick="clearUnifiedForm(true)" class="px-4 py-2.5 rounded-lg bg-slate-600 hover:bg-slate-700 text-white text-xs sm:text-sm font-bold transition shadow-xs">
+          NEW / CLEAR FORM
+        </button>
+        <button onclick="exportUnifiedCSV()" class="px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-bold transition shadow-xs">
+          EXPORT CSV
+        </button>
+      </div>
+      
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column (7 cols): Core Shared Details & Service Application -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Section 1: Applicant & Connection Details (Shared Across All 3 Forms) -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="text-base font-bold text-[#0878b9]">1. Applicant &amp; Connection Details</h2>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Shared Across All 3 Forms</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Applicant / Concessionaire Full Name <span class="text-red-500">*</span></label>
+              <input type="text" id="in_applicant" placeholder="e.g., Juan Dela Cruz" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Service Address <span class="text-red-500">*</span></label>
+              <input type="text" id="in_address" placeholder="House No., Street, Barangay, Tiaong, Quezon" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Account Number / SIN</label>
+              <input type="text" id="in_accountNo" placeholder="Enter Account No. / SIN" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Classification (Contract)</label>
+              <select id="in_classification" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-[#0878b9]">
+                <option value="">Select classification</option>
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Government">Government</option>
+                <option value="Institutional">Institutional</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Contact Number</label>
+              <input type="text" id="in_contact" placeholder="e.g., 0917-123-4567" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+              <input type="email" id="in_email" placeholder="applicant@email.com" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nearest Connection</label>
+              <input type="text" id="in_nearestConnection" placeholder="Nearest neighbor / account" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Application / Contract / Waiver Date</label>
+              <input type="date" id="in_docDate" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Landmark (Application &amp; Contract)</label>
+              <textarea id="in_landmark" rows="2" placeholder="Describe prominent landmarks near the service location" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Service Application & Investigation Details -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="text-base font-bold text-[#0878b9]">2. Service Application &amp; Investigation</h2>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Application Form</span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Applicant Declaration Text</label>
+              <textarea id="in_declaration" rows="4" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">I hereby apply for a water connection site to be located at /
+
+I hereby understand that the connection will be made until it is approved and all charges are paid. I assume responsibility for the meter and all water that passes through the connection. I will conform to the rules and regulations of the Water District.</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2">Investigation System Status</label>
+                <div class="flex items-center gap-5">
+                  <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" id="in_adequate" class="w-4 h-4 rounded text-[#0878b9]">
+                    <span>Adequate</span>
+                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" id="in_notAdequate" class="w-4 h-4 rounded text-[#0878b9]">
+                    <span>Not Adequate</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Investigated By</label>
+                <input type="text" id="in_investigatedBy" placeholder="Inspector / Investigator name" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Sketch / Location Notes of Proposed Service</label>
+              <textarea id="in_sketch" rows="3" placeholder="Enter directional notes or sketch description for the service line..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column (5 cols): Charges, Meter/Installation, Waiver -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Section 3: Charges & Payment Details -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="text-base font-bold text-[#0878b9]">3. Charges &amp; Payment Details</h2>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Application Form</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Application Fee (₱)</label>
+              <input type="number" step="0.01" id="in_applicationFee" placeholder="0.00" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Water Meter (₱)</label>
+              <input type="number" step="0.01" id="in_waterMeter" placeholder="0.00" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Ball Valve (₱)</label>
+              <input type="number" step="0.01" id="in_ballValve" placeholder="0.00" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Other Materials (₱)</label>
+              <input type="number" step="0.01" id="in_otherMaterials" placeholder="0.00" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+
+            <div class="col-span-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700">TOTAL CHARGES DUE:</span>
+              <span class="text-base font-bold text-emerald-700">₱ <span id="in_totalDisplay">0.00</span></span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Payment Date</label>
+              <input type="date" id="in_paymentDate" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Invoice No.</label>
+              <input type="text" id="in_invoiceNo" placeholder="OR / Invoice #" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Installation & Meter Record -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="text-base font-bold text-[#0878b9]">4. Installation &amp; Meter Record</h2>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Application &amp; Contract</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Size of Saddle Clamp</label>
+              <input type="text" id="in_saddleClamp" placeholder='e.g., 2" x 1/2"' class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Water Meter No.</label>
+              <input type="text" id="in_meterNo" placeholder="Serial / Meter #" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Water Meter Make</label>
+              <input type="text" id="in_make" placeholder="e.g., Neptune / Actaris" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Rate Code</label>
+              <input type="text" id="in_rateCode" placeholder="e.g., R-1" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Date Installed</label>
+              <input type="date" id="in_dateInstalled" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Recommended Date</label>
+              <input type="text" id="in_recommendedDate" placeholder="Date / Notes" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Installed By</label>
+              <input type="text" id="in_installedBy" placeholder="Plumber / Technician" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Installation Remarks</label>
+              <input type="text" id="in_installationRemarks" placeholder="Optional remarks" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Waiver Specific Details -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h2 class="text-base font-bold text-[#0878b9]">5. Waiver Specific Details</h2>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Waiver Form</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Representative Name (Optional)</label>
+              <input type="text" id="in_representative" placeholder="If represented by another" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Relationship to Applicant</label>
+              <input type="text" id="in_relationship" placeholder="e.g., Spouse, Son, Tenant" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Signed Over Printed Name</label>
+              <input type="text" id="in_printedName" placeholder="Auto-fills from Applicant" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Witness Name</label>
+              <input type="text" id="in_witness" placeholder="Enter witness full name" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SAVED UNIFIED CUSTOMER RECORDS TABLE -->
+    <div class="mt-8 bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Saved Customer Records</h3>
+          <p class="text-xs text-slate-500">Click Open to populate all 3 documents for editing or printing.</p>
+        </div>
+        <input type="text" id="recordSearch" oninput="renderUnifiedRecords()" placeholder="Search by name, address, account/SIN, or invoice..." class="w-full sm:w-80 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#0878b9]">
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="bg-[#e8f1f7] text-slate-800 border-b border-slate-300">
+              <th class="p-3 font-bold">Applicant / Concessionaire</th>
+              <th class="p-3 font-bold">Account / SIN</th>
+              <th class="p-3 font-bold">Service Address</th>
+              <th class="p-3 font-bold">Contact</th>
+              <th class="p-3 font-bold">Invoice No.</th>
+              <th class="p-3 font-bold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="unifiedRecordRows" class="divide-y divide-slate-200">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- =========================================================
+       TAB 2: SERVICE APPLICATION AND CONSTRUCTION FORM
+       ========================================================= -->
+  <section id="tab-application" class="tab-panel doc-panel hidden">
+    <div class="no-print max-w-[210mm] mx-auto mb-4 flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+      <span class="text-xs sm:text-sm font-bold text-slate-700">Preview: Service Application and Construction Form (8.5in x 13in)</span>
+      <button onclick="printSingleDocument('tab-application')" class="px-4 py-2 rounded-lg bg-[#0878b9] hover:bg-[#066399] text-white text-xs sm:text-sm font-bold transition shadow-xs">
+        PRINT / SAVE PDF
+      </button>
+    </div>
+
+    <div class="print-wrapper overflow-x-auto pb-6">
+      <div class="sheet-app">
+        <header class="header">
+          <h2>TIAONG WATER DISTRICT</h2>
+          <p class="place">Tiaong, Quezon</p>
+          <h3>SERVICE APPLICATION AND CONSTRUCTION FORM</h3>
+        </header>
+
+        <section class="top">
+          <div class="lefttop">
+            <div class="applicant-lines">
+              <div class="linefield"><b>Applicant :</b><span class="val" id="app_applicant"></span></div>
+              <div class="linefield"><b>Address :</b><span class="val" id="app_address"></span></div>
+            </div>
+            <div class="declaration">
+              <div class="declaration-body" id="app_declaration"></div>
+              <div>
+                <div class="signature">
+                  <div class="sig-val" id="app_applicantSignature"></div>
+                  <div class="date-val" id="app_signatureDate"></div>
+                </div>
+                <div class="siglabel">Applicant's Signature <span style="font-weight:normal">　 Date</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="righttop">
+            <div class="investigation">
+              <div class="investigation-title">Investigation of Application</div>
+              <div class="investigation-grid">
+                <span>System is</span>
+                <div class="checkline"><span class="box-check" id="app_adequate"></span> Adequate</div>
+                <span></span>
+                <div class="checkline"><span class="box-check" id="app_notAdequate"></span> Not Adequate</div>
+              </div>
+              <div class="investigated">Investigated by: <span class="val" id="app_investigatedBy"></span></div>
+            </div>
+            <div class="chargepay">
+              <div class="charges">
+                <div class="subhead">AMOUNT OF CHARGES DUE:</div>
+                <div class="charge-row"><span>Application Fee</span><b>P</b><span class="val" id="app_applicationFee"></span></div>
+                <div class="charge-row"><span>Water Meter</span><b>P</b><span class="val" id="app_waterMeter"></span></div>
+                <div class="charge-row"><span>Ball Valve</span><b>P</b><span class="val" id="app_ballValve"></span></div>
+                <div class="charge-row"><span>Other Materials</span><b>P</b><span class="val" id="app_otherMaterials"></span></div>
+                <div class="charge-row total"><span>TOTAL</span><b>P</b><span class="val" id="app_totalCharges">0.00</span></div>
+              </div>
+              <div class="payments">
+                <div class="subhead">PAYMENT DETAILS:</div>
+                <div class="payfield">Date<span class="val" id="app_paymentDate"></span></div>
+                <div class="payfield">Invoice No.<span class="val" id="app_invoiceNo"></span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="middle">
+          <div class="contact">
+            <div class="contactrow"><label>CONTACT NUMBER :</label><span>/</span><span class="val" id="app_contact"></span></div>
+            <div class="contactrow"><label>EMAIL ADDRESS/:</label><span class="val" id="app_email"></span></div>
+            <div class="contactrow"><label>NEAREST CONNECTION/:</label><span class="val" id="app_nearestConnection"></span></div>
+            <label class="landmark">LANDMARK/:</label>
+            <div class="landmark-val" id="app_landmark"></div>
+          </div>
+          <div class="record">
+            <div class="record-title">SERVICE APPLICATION<br>RECORD AFTER<br>INSTALLATION</div>
+            <div class="recordfield"><label>Size of Saddle Clamp</label><span class="val" id="app_saddleClamp"></span></div>
+            <div class="recordfield"><label>Meter No.</label><span class="val" id="app_meterNo"></span></div>
+            <div class="recordfield"><label>Account No.</label><span class="val" id="app_accountNo"></span></div>
+            <div class="recordfield"><label>Rate Code:</label><span class="val" id="app_rateCode"></span></div>
+            <div class="checkedby">CHECKED BY:</div>
+            <div class="signoff">
+              <p class="person">IVY KRISTINE E. MANGUNDAYAO</p>
+              DIVISION MANAGER /<br>FIN. &amp; COMMERCIAL DIVISION
+            </div>
+          </div>
+          <div class="approvals">
+            <div class="approval">
+              <div class="role">RECOMMENDED FOR INSTALLATION</div>
+              <div style="height:12px"></div>
+              <p class="person">ENGR. ANSELMO B. ADAME</p>
+              <p class="position">DIV. MNGR. C. ENGG. &amp;<br>PRODUCTION DIVISION</p>
+              <div class="rec-date" id="app_recommendedDate"></div>
+            </div>
+            <div class="approval">
+              <div class="approved">APPROVED</div>
+              <p class="person">ENGR. PERSEVERANDO T. ATIENZA</p>
+              <p class="position">GENERAL MANAGER</p>
+              <div class="details">
+                Installed by: <span class="val" id="app_installedBy"></span><br>
+                Date: <span class="val" id="app_installationDate"></span><br>
+                Remarks: <span class="val" id="app_installationRemarks"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sketch">
+          <div class="sketch-title">SKETCH OF LOCATION OF PROPOSED SERVICE</div>
+          <div class="sketch-body" id="app_sketch"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 3: CONTRACT FOR WATER SERVICE INSTALLATION
+       ========================================================= -->
+  <section id="tab-contract" class="tab-panel doc-panel hidden">
+    <div class="no-print max-w-[210mm] mx-auto mb-4 flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+      <span class="text-xs sm:text-sm font-bold text-slate-700">Preview: Contract for Water Service Installation (8.5in x 13in)</span>
+      <button onclick="printSingleDocument('tab-contract')" class="px-4 py-2 rounded-lg bg-[#0878b9] hover:bg-[#066399] text-white text-xs sm:text-sm font-bold transition shadow-xs">
+        PRINT / SAVE PDF
+      </button>
+    </div>
+
+    <div class="print-wrapper overflow-x-auto pb-6">
+      <div class="sheet-contract">
+        <div class="contract-header">
+          <h2>TIAONG WATER DISTRICT</h2>
+          Tiaong, Quezon
+          <h3>CONTRACT FOR WATER SERVICE INSTALLATION</h3>
+        </div>
+
+        <div class="details">
+          <div class="detail">
+            <label>Name:</label>
+            <span id="con_name"></span>
+          </div>
+
+          <div class="detail">
+            <label>Address:</label>
+            <span id="con_address"></span>
+          </div>
+
+          <div class="detail">
+            <label>Landmark:</label>
+            <span id="con_landmark"></span>
+          </div>
+
+          <div class="detail">
+            <label>Account No.:</label>
+            <span id="con_accountNo"></span>
+          </div>
+
+          <div class="detail">
+            <label></label><span></span>
+          </div>
+
+          <div class="detail">
+            <label>Date Installed:</label>
+            <span id="con_dateInstalled"></span>
+          </div>
+
+          <div class="detail">
+            <label></label><span></span>
+          </div>
+
+          <div class="detail">
+            <label>Make:</label>
+            <span id="con_make"></span>
+          </div>
+
+          <div class="detail">
+            <label></label><span></span>
+          </div>
+
+          <div class="detail">
+            <label>Classification:</label>
+            <span id="con_classification"></span>
+          </div>
+        </div>
+
+        <p class="paragraph">
+          I am register concessionaires of water service connection with
+          Account Number <b id="con_accountParagraph">________________</b>.
+        </p>
+
+        <p class="paragraph">
+          Contract is hereby make for the above water service installed
+          on the date as stated to be used by me in accordance with the
+          Rules and Regulations of the Tiaong Water District now enforced
+          or may be enforced thereafter.
+        </p>
+
+        <p class="paragraph">
+          In addition I hereby agree:
+        </p>
+
+        <div class="clauses">
+          <p>
+            1. That while I have in my custody the above-mention water meter,
+            I shall at all times safeguard and protect it and the district
+            has the right to inspect the water meter anytime.
+          </p>
+          <p>
+            2. That in case of damage of whatever cause, I shall report the
+            same to the office of the Tiaong Water District within twenty
+            four hours. I shall bear the cost of its repair except when
+            due to force or other natural causes.
+          </p>
+          <p>
+            3. That in any case of loss or irreparable damages shall either
+            replace the water meter in kind or pay for it at the current
+            price in the market.
+          </p>
+          <p>
+            4. That I will abide by the terms and conditions stipulated
+            in the contract for the Water Service and Installation of
+            Water Meters.
+          </p>
+          <p>
+            5. That I understand that the Water Meters installed is
+            properly sealed and in case of accidental damages on it
+            shall notify the office immediately.
+          </p>
+          <p>
+            6. That I am fully aware of the penalties imposed by the law
+            as provide in the Presidential Decree No. 198 (as amended
+            by Presidential Decree No. 786) stated hereunder.
+          </p>
+        </div>
+
+        <div class="law">
+          <br><h4>PRESIDENTIAL DECREE NO. 198 (as amended by PD 786)</h4>
+          <b>Section 1. Protection of Water and Facilities of District</b>
+        </div>
+
+        <div class="law-text">
+          <br>(d) Safeguard and protect uses of its water, for this purpose,
+          any person who installs any connection without the previous
+          authority from the district established under this Decree;
+          tampers water meters or uses jumpers or other devices stolen
+          of pilfered water or water meters shall upon conviction be
+          punished by prison correctional in the minimum period of
+          fine of ranging from TWO THOUSAND PESOS or SIX THOUSAND
+          PESOS or both. If the violation is committed with connivance
+          or permission of an employee or officer of the water district
+          and employee or officer shall, upon conviction, be punished
+          by a penalty one degree lower than Prison Correctional in its
+          minimum permanently be dismissed and perpetually disqualified
+          from employment in any utility or service company owned or
+          controlled by the government.
+        </div>
+
+        <div class="witness-date">
+          IN WITNESS WHEREOF, I HAVE ON THIS
+          <b id="con_day">__________</b>
+          day of
+          <b id="con_month">__________</b>,
+          <b id="con_year">2026</b>
+          set my signature below.
+          <br><br>FOR TIAONG WATER DISTRICT<br>
+          By:
+        </div>
+
+        <div class="signatures">
+          <div>
+            <br><br>
+            <div class="signature-line">
+              <p class="person">ENGR. PERSEVERANDO T. ATIENZA</p>
+              <b>General Manager</b>
+            </div>
+          </div>
+
+          <div>
+            <br><br>
+            <div class="signature-line">
+              <b id="con_signatureName"></b><br>
+              Concessionaire's Signature
+            </div>
+          </div>
+        </div>
+
+        <div class="witnesses">
+          <div class="signature-line">Witness</div>
+          <div class="signature-line">Witness</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TAB 4: WAIVER FOR DISCONNECTION OF WATER SERVICE
+       ========================================================= -->
+  <section id="tab-waiver" class="tab-panel doc-panel hidden">
+    <div class="no-print max-w-[8.5in] mx-auto mb-4 flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+      <span class="text-xs sm:text-sm font-bold text-slate-700">Preview: Waiver for Disconnection of Water Service (8.5in x 13in)</span>
+      <button onclick="printSingleDocument('tab-waiver')" class="px-4 py-2 rounded-lg bg-[#0878b9] hover:bg-[#066399] text-white text-xs sm:text-sm font-bold transition shadow-xs">
+        PRINT / SAVE PDF
+      </button>
+    </div>
+
+    <div class="print-wrapper overflow-x-auto pb-6">
+      <div class="sheet-waiver">
+        <div class="header">
+          <img src="OIP.jfif" class="twd-logo" alt="Tiaong Water District Logo" onerror="this.style.display='none'; document.getElementById('twd-logo-fallback').style.display='flex';">
+          <div id="twd-logo-fallback" class="twd-logo-fallback">TIAONG<br>WATER<br>DISTRICT</div>
+          <h2>TIAONG WATER DISTRICT</h2>
+          <p>New Public Market, Brgy. Lalig, Tiaong, Quezon</p>
+          <p>Tel. Nos. (042) 545-9170 / 09518689135 / 09228649318</p>
+          <p>Email Address: tiaongwd@yahoo.com</p>
+        </div>
+
+        <div class="doc-title">
+          <h3>WAIVER</h3>
+          <p>(FOR DISCONNECTION OF WATER SERVICE)</p>
+        </div>
+
+        <div class="body-text">
+          <p><b>KNOW ALL MEN BY THESE PRESENTS:</b></p>
+
+          <p>
+            Applicant /
+            <span class="fill long" id="wai_applicant"></span>,
+            in his/her behalf or represented by
+            <span class="fill medium" id="wai_representative"></span>,
+            with service address at /
+            <span class="fill medium" id="wai_address"></span>,
+            hereby waives, relinquishes and quitclaims whatever right or objection he/she may have against the disconnection of his/her water service and the removal, after due notice by the Tiaong Water District of his/her water facilities under SIN
+            <span class="fill" id="wai_sin"></span>
+            by reason of any of the following circumstances:
+          </p>
+
+          <ol>
+            <li>The Lawful owner of the land/structure demands the removal of the said water service;</li>
+            <li>The water installation is condemned by the proper authorities;</li>
+            <li>When an illegal connections is tapped to his/her service pipeline to supply water to other customer/s without Tiaong Water District's consent;</li>
+            <li>when the customer/authorized representative is found to be falsified by information or document presented or submitted to Tiaong Water District in connection to his/her Water Service Application.</li>
+          </ol>
+
+          <p>
+            In affirmation thereof, herein applicant hereby signed his Waiver this /
+            <span class="fill" id="wai_day"></span>
+            day of /
+            <span class="fill" id="wai_month"></span>,
+            <span id="wai_year" style="font-weight:bold;">2026</span> at Tiaong Water District.
+          </p>
+        </div>
+
+        <div class="signature">
+          <div>
+            <div style="height:28px"></div>
+            <div class="sign-line">
+              <b id="wai_printedName"></b><br>
+              Signed over Printed Name
+            </div>
+          </div>
+
+          <div>
+            <div style="height:28px"></div>
+            <div class="sign-line">
+              <b id="wai_relationship"></b><br>
+              Relationship to Applicant (If representative)
+            </div>
+          </div>
+        </div>
+
+        <div class="witness">
+          <p><b>Signed in the presence of:</b></p>
+          <div style="height:24px"></div>
+          <div class="sign-line" style="font-weight:bold;" id="wai_witness"></div>
+        </div>
+
+        <!-- DISCONNECTION POLICY -->
+        <div class="policy">
+          <h3>***** DISCONNECTION POLICY *****</h3>
+
+          <p>
+            Please be informed about the disconnection Policy of Tiaong Water District as per Board Resolution No. 05, Series of 2019 to shorten the period of disconnection policy of concessionaires in arrears from two (2) months water billing after due to one (1) or current month water billing, after due date effective April 30, 2019.
+          </p>
+
+          <p>
+            In view of the above, we would like to inform you the applicable reconnection fee depending on the length of disconnection period listed below:
+          </p>
+
+          <table>
+            <tr>
+              <td><b>Disconnection Period</b></td>
+              <td><b>Reconnection Fee</b></td>
+              <td><b>Water Rates for Residential:</b></td>
+            </tr>
+            <tr>
+              <td>1 - 5 months</td>
+              <td>P 300.00</td>
+              <td>0 - 10 = P 200.00 (minimum)</td>
+            </tr>
+            <tr>
+              <td>6 months and above</td>
+              <td>P 500.00</td>
+              <td>11 - 20 = P 22.50 / cubic</td>
+            </tr>
+            <tr>
+              <td>* 1 year and above to be permanently Disconnected</td>
+              <td></td>
+              <td>21 - 30 = P 25.00 / cubic</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td>31 - 40 = P 30.00 / cubic</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td>over 40 = P 37.50 / cubic</td>
+            </tr>
+          </table>
+
+          <p>
+            Moreover, if you have arrears or remaining unsettled water bills it will be added to the reconnection fee which you need to pay for activation of your disconnected water service.
+          </p>
+
+          <div class="manager">
+            <div>
+              <b>IVY KRISTINE E. MANGUNDAYAO</b><br>
+              Division Manager C
+            </div>
+            <div class="sign-line" style="text-align:center">
+              Signature of Concessionaire
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const STORAGE_KEY = 'twdUnifiedRecords';
+  let unifiedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let activeRecordId = null;
+  let printedNameManuallyEdited = false;
+
+  const DEFAULT_DECLARATION = `I hereby apply for a water connection site to be located at /\n\nI hereby understand that the connection will be made until it is approved and all charges are paid. I assume responsibility for the meter and all water that passes through the connection. I will conform to the rules and regulations of the Water District.`;
+
+  const inputIds = [
+    'in_applicant', 'in_address', 'in_accountNo', 'in_classification',
+    'in_contact', 'in_email', 'in_nearestConnection', 'in_docDate',
+    'in_landmark', 'in_declaration', 'in_adequate', 'in_notAdequate',
+    'in_investigatedBy', 'in_sketch', 'in_applicationFee', 'in_waterMeter',
+    'in_ballValve', 'in_otherMaterials', 'in_paymentDate', 'in_invoiceNo',
+    'in_saddleClamp', 'in_meterNo', 'in_make', 'in_rateCode',
+    'in_dateInstalled', 'in_recommendedDate', 'in_installedBy',
+    'in_installationRemarks', 'in_representative', 'in_relationship',
+    'in_printedName', 'in_witness'
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  // Toast notification helper
+  function showToast(message, type = 'success') {
+    const container = $('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.background = type === 'error' ? '#dc2626' : (type === 'info' ? '#0878b9' : '#16a34a');
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.25s ease';
+      setTimeout(() => toast.remove(), 250);
+    }, 3000);
+  }
+
+  // Custom Confirm Dialog
+  function showConfirm(title, message, onConfirm) {
+    $('confirm-title').textContent = title;
+    $('confirm-message').textContent = message;
+    const modal = $('confirm-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      $('confirm-ok').onclick = null;
+      $('confirm-cancel').onclick = null;
+    };
+
+    $('confirm-cancel').onclick = cleanup;
+    $('confirm-ok').onclick = () => {
+      cleanup();
+      onConfirm();
+    };
+  }
+
+  // Tab switching
+  function switchTab(targetId) {
+    document.body.classList.remove('print-all-mode');
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      const isTarget = panel.id === targetId;
+      panel.classList.toggle('hidden', !isTarget);
+      panel.classList.toggle('block', isTarget);
+      panel.classList.toggle('print-active', isTarget);
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const isTarget = btn.dataset.target === targetId;
+      if (isTarget) {
+        btn.classList.add('active', 'bg-[#0878b9]', 'text-white', 'shadow-xs');
+        btn.classList.remove('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+      } else {
+        btn.classList.remove('active', 'bg-[#0878b9]', 'text-white', 'shadow-xs');
+        btn.classList.add('bg-slate-100', 'text-slate-700', 'hover:bg-slate-200');
+      }
+    });
+
+    syncAllDocuments();
+  }
+
+  // Print Single Document
+  function printSingleDocument(tabId) {
+    switchTab(tabId);
+    setTimeout(() => window.print(), 100);
+  }
+
+  // Print All 3 Documents
+  function printAllDocuments() {
+    syncAllDocuments();
+    document.body.classList.add('print-all-mode');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => document.body.classList.remove('print-all-mode'), 500);
+    }, 100);
+  }
+
+  // Date Formatting Helpers
+  function formatLongDate(isoDate) {
+    if (!isoDate) return '';
+    const d = new Date(isoDate + 'T00:00:00');
+    if (isNaN(d.getTime())) return isoDate;
+    return d.toLocaleDateString('en-PH', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  function formatShortDate(isoDate) {
+    if (!isoDate) return '';
+    const d = new Date(isoDate + 'T00:00:00');
+    if (isNaN(d.getTime())) return isoDate;
+    return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  }
+
+  // Sync All Inputs to All 3 Documents
+  function syncAllDocuments() {
+    const applicant = $('in_applicant').value.trim();
+    const address = $('in_address').value.trim();
+    const accountNo = $('in_accountNo').value.trim();
+    const classification = $('in_classification').value;
+    const contact = $('in_contact').value.trim();
+    const email = $('in_email').value.trim();
+    const nearestConnection = $('in_nearestConnection').value.trim();
+    const docDate = $('in_docDate').value;
+    const landmark = $('in_landmark').value;
+
+    const declaration = $('in_declaration').value;
+    const adequate = $('in_adequate').checked;
+    const notAdequate = $('in_notAdequate').checked;
+    const investigatedBy = $('in_investigatedBy').value.trim();
+    const sketch = $('in_sketch').value;
+
+    const appFee = parseFloat($('in_applicationFee').value) || 0;
+    const meterFee = parseFloat($('in_waterMeter').value) || 0;
+    const ballValve = parseFloat($('in_ballValve').value) || 0;
+    const otherMat = parseFloat($('in_otherMaterials').value) || 0;
+    const totalCharges = appFee + meterFee + ballValve + otherMat;
+
+    const paymentDate = $('in_paymentDate').value;
+    const invoiceNo = $('in_invoiceNo').value.trim();
+
+    const saddleClamp = $('in_saddleClamp').value.trim();
+    const meterNo = $('in_meterNo').value.trim();
+    const make = $('in_make').value.trim();
+    const rateCode = $('in_rateCode').value.trim();
+    const dateInstalled = $('in_dateInstalled').value;
+    const recommendedDate = $('in_recommendedDate').value.trim();
+    const installedBy = $('in_installedBy').value.trim();
+    const installationRemarks = $('in_installationRemarks').value.trim();
+
+    const representative = $('in_representative').value.trim();
+    const relationship = $('in_relationship').value.trim();
+    const printedName = $('in_printedName').value.trim() || applicant;
+    const witness = $('in_witness').value.trim();
+
+    // Update total display in entry tab
+    $('in_totalDisplay').textContent = totalCharges.toFixed(2);
+
+    // Date breakdown for Contract & Waiver
+    let dayStr = '', monthStr = '', yearStr = '2026';
+    if (docDate) {
+      const parsed = new Date(docDate + 'T00:00:00');
+      if (!isNaN(parsed.getTime())) {
+        dayStr = String(parsed.getDate());
+        monthStr = parsed.toLocaleString('en-US', { month: 'long' });
+        yearStr = String(parsed.getFullYear());
+      }
+    }
+
+    // -----------------------------------------
+    // 1. Populate Service Application Form
+    // -----------------------------------------
+    $('app_applicant').textContent = applicant;
+    $('app_address').textContent = address;
+    $('app_declaration').textContent = declaration;
+    $('app_applicantSignature').textContent = applicant.toUpperCase();
+    $('app_signatureDate').textContent = formatShortDate(docDate);
+
+    $('app_adequate').textContent = adequate ? '✓' : '';
+    $('app_notAdequate').textContent = notAdequate ? '✓' : '';
+    $('app_investigatedBy').textContent = investigatedBy;
+
+    $('app_applicationFee').textContent = $('in_applicationFee').value ? appFee.toFixed(2) : '';
+    $('app_waterMeter').textContent = $('in_waterMeter').value ? meterFee.toFixed(2) : '';
+    $('app_ballValve').textContent = $('in_ballValve').value ? ballValve.toFixed(2) : '';
+    $('app_otherMaterials').textContent = $('in_otherMaterials').value ? otherMat.toFixed(2) : '';
+    $('app_totalCharges').textContent = totalCharges.toFixed(2);
+
+    $('app_paymentDate').textContent = formatShortDate(paymentDate);
+    $('app_invoiceNo').textContent = invoiceNo;
+
+    $('app_contact').textContent = contact;
+    $('app_email').textContent = email;
+    $('app_nearestConnection').textContent = nearestConnection;
+    $('app_landmark').textContent = landmark;
+
+    $('app_saddleClamp').textContent = saddleClamp;
+    $('app_meterNo').textContent = meterNo;
+    $('app_accountNo').textContent = accountNo;
+    $('app_rateCode').textContent = rateCode;
+
+    $('app_recommendedDate').textContent = recommendedDate;
+    $('app_installedBy').textContent = installedBy;
+    $('app_installationDate').textContent = formatShortDate(dateInstalled);
+    $('app_installationRemarks').textContent = installationRemarks;
+    $('app_sketch').textContent = sketch;
+
+    // -----------------------------------------
+    // 2. Populate Contract for Water Service
+    // -----------------------------------------
+    $('con_name').textContent = applicant;
+    $('con_address').textContent = address;
+    $('con_landmark').textContent = landmark.replace(/\n/g, ', ');
+    $('con_accountNo').textContent = accountNo;
+    $('con_accountParagraph').textContent = accountNo || '________________';
+    $('con_dateInstalled').textContent = formatLongDate(dateInstalled);
+    $('con_make').textContent = make;
+    $('con_classification').textContent = classification;
+    $('con_signatureName').textContent = applicant.toUpperCase();
+
+    $('con_day').textContent = dayStr || '__________';
+    $('con_month').textContent = monthStr || '__________';
+    $('con_year').textContent = yearStr;
+
+    // -----------------------------------------
+    // 3. Populate Waiver for Disconnection
+    // -----------------------------------------
+    $('wai_applicant').textContent = applicant;
+    $('wai_representative').textContent = representative;
+    $('wai_address').textContent = address;
+    $('wai_sin').textContent = accountNo;
+    $('wai_day').textContent = dayStr;
+    $('wai_month').textContent = monthStr;
+    $('wai_year').textContent = yearStr;
+    $('wai_printedName').textContent = printedName.toUpperCase();
+    $('wai_relationship').textContent = relationship;
+    $('wai_witness').textContent = witness.toUpperCase();
+  }
+
+  // Auto-sync Signed Over Printed Name with Applicant unless manually edited
+  $('in_applicant').addEventListener('input', () => {
+    if (!printedNameManuallyEdited) {
+      $('in_printedName').value = $('in_applicant').value;
+    }
+    syncAllDocuments();
+  });
+
+  $('in_printedName').addEventListener('input', () => {
+    printedNameManuallyEdited = $('in_printedName').value.trim() !== '';
+    syncAllDocuments();
+  });
+
+  // Attach listeners to all remaining inputs
+  inputIds.forEach(id => {
+    if (id !== 'in_applicant' && id !== 'in_printedName') {
+      $(id).addEventListener('input', syncAllDocuments);
+      $(id).addEventListener('change', syncAllDocuments);
+    }
+  });
+
+  // =========================================================
+  // RECORD MANAGEMENT (Save, Load, Delete, Clear, Export CSV)
+  // =========================================================
+  function collectFormData() {
+    const data = {};
+    inputIds.forEach(id => {
+      const el = $(id);
+      data[id] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    return data;
+  }
+
+  function applyFormData(data) {
+    inputIds.forEach(id => {
+      const el = $(id);
+      if (el.type === 'checkbox') {
+        el.checked = !!data[id];
+      } else {
+        el.value = data[id] ?? '';
+      }
+    });
+    printedNameManuallyEdited = Boolean(data.in_printedName && data.in_printedName !== data.in_applicant);
+    syncAllDocuments();
+  }
+
+  function saveUnifiedRecord() {
+    const data = collectFormData();
+    if (!data.in_applicant.trim()) {
+      showToast('Please enter the Applicant / Concessionaire Full Name.', 'error');
+      $('in_applicant').focus();
+      return;
+    }
+    if (!data.in_address.trim()) {
+      showToast('Please enter the Service Address.', 'error');
+      $('in_address').focus();
+      return;
+    }
+
+    if (activeRecordId) {
+      const idx = unifiedRecords.findIndex(r => r.id === activeRecordId);
+      if (idx >= 0) {
+        unifiedRecords[idx] = { ...data, id: activeRecordId, updatedAt: new Date().toISOString() };
+      }
+    } else {
+      activeRecordId = String(Date.now());
+      unifiedRecords.unshift({ ...data, id: activeRecordId, createdAt: new Date().toISOString() });
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(unifiedRecords));
+    renderUnifiedRecords();
+    showToast('Customer record saved across all 3 forms!');
+  }
+
+  function loadUnifiedRecord(id) {
+    const record = unifiedRecords.find(r => r.id === id);
+    if (!record) return;
+    activeRecordId = id;
+    applyFormData(record);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast(`Loaded record for ${record.in_applicant}`, 'info');
+  }
+
+  function deleteUnifiedRecord(id) {
+    const record = unifiedRecords.find(r => r.id === id);
+    showConfirm(
+      'Delete Customer Record',
+      `Are you sure you want to delete the record for "${record?.in_applicant || 'this customer'}"?`,
+      () => {
+        unifiedRecords = unifiedRecords.filter(r => r.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(unifiedRecords));
+        if (activeRecordId === id) {
+          clearUnifiedForm(false);
+        }
+        renderUnifiedRecords();
+        showToast('Record deleted.', 'info');
+      }
+    );
+  }
+
+  function clearUnifiedForm(askConfirm = true) {
+    const executeClear = () => {
+      inputIds.forEach(id => {
+        const el = $(id);
+        if (el.type === 'checkbox') el.checked = false;
+        else el.value = '';
+      });
+      $('in_declaration').value = DEFAULT_DECLARATION;
+      activeRecordId = null;
+      printedNameManuallyEdited = false;
+      syncAllDocuments();
+      if (askConfirm) showToast('Form cleared for new customer.', 'info');
+    };
+
+    if (askConfirm) {
+      showConfirm('New / Clear Form', 'Clear all current fields to start a new customer application?', executeClear);
+    } else {
+      executeClear();
+    }
+  }
+
+  function renderUnifiedRecords() {
+    const query = ($('recordSearch').value || '').toLowerCase().trim();
+    const tbody = $('unifiedRecordRows');
+    tbody.innerHTML = '';
+
+    const filtered = unifiedRecords.filter(r =>
+      (r.in_applicant || '').toLowerCase().includes(query) ||
+      (r.in_address || '').toLowerCase().includes(query) ||
+      (r.in_accountNo || '').toLowerCase().includes(query) ||
+      (r.in_invoiceNo || '').toLowerCase().includes(query)
+    );
+
+    if (filtered.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="6" class="p-6 text-center text-slate-500">No saved customer records found. Fill out the form above and click <b>SAVE CUSTOMER RECORD</b>.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50 transition';
+
+      const cells = [
+        r.in_applicant || '—',
+        r.in_accountNo || '—',
+        r.in_address || '—',
+        r.in_contact || '—',
+        r.in_invoiceNo || '—'
+      ];
+
+      cells.forEach((val, idx) => {
+        const td = document.createElement('td');
+        td.className = 'p-3 ' + (idx === 0 ? 'font-bold text-slate-900' : 'text-slate-700');
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+
+      const actionTd = document.createElement('td');
+      actionTd.className = 'p-3 text-right whitespace-nowrap space-x-1.5';
+
+      const openBtn = document.createElement('button');
+      openBtn.textContent = 'Open';
+      openBtn.className = 'px-3 py-1.5 rounded-md bg-[#0878b9] hover:bg-[#066399] text-white text-xs font-bold transition';
+      openBtn.onclick = () => loadUnifiedRecord(r.id);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.className = 'px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition';
+      delBtn.onclick = () => deleteUnifiedRecord(r.id);
+
+      actionTd.append(openBtn, delBtn);
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function exportUnifiedCSV() {
+    if (unifiedRecords.length === 0) {
+      showToast('No saved records to export.', 'error');
+      return;
+    }
+
+    const columns = [
+      { key: 'in_applicant', label: 'Applicant / Concessionaire' },
+      { key: 'in_accountNo', label: 'Account No / SIN' },
+      { key: 'in_address', label: 'Service Address' },
+      { key: 'in_classification', label: 'Classification' },
+      { key: 'in_contact', label: 'Contact Number' },
+      { key: 'in_email', label: 'Email' },
+      { key: 'in_docDate', label: 'Application Date' },
+      { key: 'in_invoiceNo', label: 'Invoice No' },
+      { key: 'in_paymentDate', label: 'Payment Date' },
+      { key: 'in_meterNo', label: 'Meter No' },
+      { key: 'in_make', label: 'Meter Make' },
+      { key: 'in_dateInstalled', label: 'Date Installed' },
+      { key: 'in_representative', label: 'Representative' },
+      { key: 'in_witness', label: 'Witness' }
+    ];
+
+    const escapeCSV = val => `"${String(val ?? '').replace(/"/g, '""')}"`;
+    const headerRow = columns.map(c => escapeCSV(c.label)).join(',');
+    const dataRows = unifiedRecords.map(rec =>
+      columns.map(c => escapeCSV(rec[c.key])).join(',')
+    );
+
+    const csvContent = [headerRow, ...dataRows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'TWD_Unified_New_Connections.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('CSV exported successfully!');
+  }
+
+  // Initialize on load
+  window.addEventListener('DOMContentLoaded', () => {
+    renderUnifiedRecords();
+    syncAllDocuments();
+  });
+</script>
+</body>
+</html>
