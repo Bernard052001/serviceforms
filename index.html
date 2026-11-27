@@ -331,6 +331,11 @@
     text-align: center;
   }
   .sheet-contract .signature-line { border-top: 1px solid #000; padding-top: 4px; }
+  .sheet-contract .contract-concessionaire-signature {
+    width: 75%;
+    height: 38px;
+    margin: 0 auto 2px;
+  }
   .sheet-contract .witnesses {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -364,8 +369,8 @@
     position: absolute;
     left: 4px;
     top: -4px;
-    width: 105px;
-    height: 105px;
+    width: 130px;
+    height: 130px;
     object-fit: contain;
   }
   .sheet-waiver .twd-logo-fallback {
@@ -410,7 +415,7 @@
     border: 2px solid #000;
     padding: 8px 10px;
     margin-top: 22px;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.35;
   }
   .sheet-waiver .policy h3 { text-align: center; margin: 0 0 5px; font-size: 18px; font-weight: bold; }
@@ -439,7 +444,76 @@
     margin-top: 18px;
     font-size: 13px;
   }
-  .sheet-waiver .manager div { width: 48%; }
+  .sheet-waiver .manager > div { width: 48%; }
+  .sheet-waiver .manager .policy-concessionaire-signature {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-end;
+    text-align: center;
+  }
+  .sheet-waiver .manager .policy-concessionaire-signature .printed-signature {
+    order: 0;
+    width: 75%;
+    height: 38px;
+    margin: 0 auto 2px;
+  }
+  .sheet-waiver .manager .policy-concessionaire-signature .sign-line {
+    order: 1;
+    width: 100%;
+  }
+
+  /* Concessionaire signature pad */
+  .signature-pad-canvas {
+    display: block;
+    width: 100%;
+    height: 150px;
+    background: #fff;
+    border: 1px dashed #94a3b8;
+    border-radius: 8px;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .printed-signature {
+    display: block;
+    max-width: 190px;
+    width: 75%;
+    height: 38px;
+    object-fit: contain;
+    object-position: center bottom;
+    margin: 0 auto 2px;
+  }
+  .sheet-app .signature .printed-signature {
+    width: 100%;
+    height: 30px;
+    margin: -8px auto 0;
+  }
+  .sheet-waiver .signature .printed-signature {
+    height: 38px;
+    margin: 0 auto 2px;
+  }
+  .sheet-waiver .signature .waiver-concessionaire-signature {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  /* Keep the handwritten signature clearly ABOVE the printed name and signature line. */
+  .sheet-waiver .signature .waiver-concessionaire-signature .printed-signature {
+    order: 0;
+    flex: 0 0 44px;
+    height: 44px;
+    width: 75%;
+    margin: 0 auto 2px;
+  }
+  .sheet-waiver .signature .waiver-concessionaire-signature .sign-line {
+    order: 1;
+    width: 100%;
+  }
+  .sheet-waiver .manager .printed-signature {
+    height: 30px;
+    margin: -5px auto 0;
+  }
 
   /* =========================================================
      PRINT MEDIA RULES
@@ -568,11 +642,11 @@
       <!-- Left Column (7 cols): Core Shared Details & Service Application -->
       <div class="lg:col-span-7 space-y-6">
 
-        <!-- Section 1: Applicant & Connection Details (Shared Across All 3 Forms) -->
+        <!-- Section 1: Applicant & Connection Details (Primary Details) -->
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
             <h2 class="text-base font-bold text-[#0878b9]">1. Applicant &amp; Connection Details</h2>
-            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Shared Across All 3 Forms</span>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Primary Details</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -630,6 +704,19 @@
           </div>
         </div>
 
+        <!-- Concessionaire Signature Pad -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+          <div class="border-b border-slate-100 pb-3 mb-3">
+            <h2 class="text-base font-bold text-[#0878b9]">Concessionaire Signature</h2>
+            <p class="text-xs text-slate-500 mt-1">Sign below using a mouse, touchscreen, or stylus. This signature will appear on the printed forms and be saved with the customer record.</p>
+          </div>
+          <canvas id="concessionaireSignaturePad" class="signature-pad-canvas" aria-label="Concessionaire signature pad"></canvas>
+          <div class="flex items-center justify-between gap-3 mt-3">
+            <span id="signatureStatus" class="text-xs text-slate-500">No signature captured</span>
+            <button type="button" onclick="clearConcessionaireSignature()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">CLEAR SIGNATURE</button>
+          </div>
+        </div>
+
         <!-- Section 2: Service Application & Investigation Details -->
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -682,7 +769,7 @@ I hereby understand that the connection will be made until it is approved and al
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
             <h2 class="text-base font-bold text-[#0878b9]">3. Charges &amp; Payment Details</h2>
-            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Application Form</span>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Application Fees</span>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -723,7 +810,7 @@ I hereby understand that the connection will be made until it is approved and al
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
             <h2 class="text-base font-bold text-[#0878b9]">4. Installation &amp; Meter Record</h2>
-            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Application &amp; Contract</span>
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#0878b9] border border-sky-200">Meter Details</span>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -852,7 +939,7 @@ I hereby understand that the connection will be made until it is approved and al
               <div class="declaration-body" id="app_declaration"></div>
               <div>
                 <div class="signature">
-                  <div class="sig-val" id="app_applicantSignature"></div>
+                  <div class="sig-val" id="app_applicantSignature"><img id="app_signatureImage" class="printed-signature" alt="Concessionaire signature" style="display:none"></div>
                   <div class="date-val" id="app_signatureDate"></div>
                 </div>
                 <div class="siglabel">Applicant's Signature <span style="font-weight:normal">　 Date</span></div>
@@ -1100,6 +1187,7 @@ I hereby understand that the connection will be made until it is approved and al
 
           <div>
             <br><br>
+            <img id="con_signatureImage" class="printed-signature contract-concessionaire-signature" alt="Concessionaire signature" style="display:none">
             <div class="signature-line">
               <b id="con_signatureName"></b><br>
               Concessionaire's Signature
@@ -1174,8 +1262,8 @@ I hereby understand that the connection will be made until it is approved and al
         </div>
 
         <div class="signature">
-          <div>
-            <div style="height:28px"></div>
+          <div class="waiver-concessionaire-signature">
+            <img id="wai_signatureImage" class="printed-signature" alt="Concessionaire signature" style="display:none">
             <div class="sign-line">
               <b id="wai_printedName"></b><br>
               Signed over Printed Name
@@ -1251,8 +1339,9 @@ I hereby understand that the connection will be made until it is approved and al
               <b>IVY KRISTINE E. MANGUNDAYAO</b><br>
               Division Manager C
             </div>
-            <div class="sign-line" style="text-align:center">
-              Signature of Concessionaire
+            <div class="policy-concessionaire-signature">
+              <img id="wai_policySignatureImage" class="printed-signature" alt="Concessionaire signature" style="display:none">
+              <div class="sign-line">Signature of Concessionaire</div>
             </div>
           </div>
         </div>
@@ -1267,6 +1356,7 @@ I hereby understand that the connection will be made until it is approved and al
   let unifiedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   let activeRecordId = null;
   let printedNameManuallyEdited = false;
+  let concessionaireSignatureData = '';
 
   const DEFAULT_DECLARATION = `I hereby apply for a water connection site to be located at /\n\nI hereby understand that the connection will be made until it is approved and all charges are paid. I assume responsibility for the meter and all water that passes through the connection. I will conform to the rules and regulations of the Water District.`;
 
@@ -1437,7 +1527,9 @@ I hereby understand that the connection will be made until it is approved and al
     $('app_applicant').textContent = applicant;
     $('app_address').textContent = address;
     $('app_declaration').textContent = declaration;
-    $('app_applicantSignature').textContent = applicant.toUpperCase();
+    $('app_applicantSignature').childNodes[0].textContent = '';
+    $('app_signatureImage').src = concessionaireSignatureData;
+    $('app_signatureImage').style.display = concessionaireSignatureData ? 'block' : 'none';
     $('app_signatureDate').textContent = formatShortDate(docDate);
 
     $('app_adequate').textContent = adequate ? '✓' : '';
@@ -1481,6 +1573,11 @@ I hereby understand that the connection will be made until it is approved and al
     $('con_make').textContent = make;
     $('con_classification').textContent = classification;
     $('con_signatureName').textContent = applicant.toUpperCase();
+    ['con_signatureImage', 'wai_signatureImage', 'wai_policySignatureImage'].forEach(id => {
+      const img = $(id);
+      img.src = concessionaireSignatureData;
+      img.style.display = concessionaireSignatureData ? 'block' : 'none';
+    });
 
     $('con_day').textContent = dayStr || '__________';
     $('con_month').textContent = monthStr || '__________';
@@ -1531,6 +1628,7 @@ I hereby understand that the connection will be made until it is approved and al
       const el = $(id);
       data[id] = el.type === 'checkbox' ? el.checked : el.value;
     });
+    data.concessionaireSignatureData = concessionaireSignatureData;
     return data;
   }
 
@@ -1544,6 +1642,8 @@ I hereby understand that the connection will be made until it is approved and al
       }
     });
     printedNameManuallyEdited = Boolean(data.in_printedName && data.in_printedName !== data.in_applicant);
+    concessionaireSignatureData = data.concessionaireSignatureData || '';
+    redrawSignaturePadFromData();
     syncAllDocuments();
   }
 
@@ -1611,6 +1711,8 @@ I hereby understand that the connection will be made until it is approved and al
       $('in_declaration').value = DEFAULT_DECLARATION;
       activeRecordId = null;
       printedNameManuallyEdited = false;
+      concessionaireSignatureData = '';
+      clearConcessionaireSignature(false);
       syncAllDocuments();
       if (askConfirm) showToast('Form cleared for new customer.', 'info');
     };
@@ -1718,8 +1820,97 @@ I hereby understand that the connection will be made until it is approved and al
     showToast('CSV exported successfully!');
   }
 
+  // =========================================================
+  // CONCESSIONAIRE SIGNATURE PAD (mouse, stylus, touch)
+  // =========================================================
+  const signatureCanvas = $('concessionaireSignaturePad');
+  const signatureContext = signatureCanvas.getContext('2d');
+  let signatureDrawing = false;
+  let signatureHasInk = false;
+
+  function resizeSignatureCanvas() {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const oldData = signatureHasInk ? signatureCanvas.toDataURL() : '';
+    signatureCanvas.width = Math.round(rect.width * ratio);
+    signatureCanvas.height = Math.round(rect.height * ratio);
+    signatureContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    signatureContext.lineWidth = 2.2;
+    signatureContext.lineCap = 'round';
+    signatureContext.lineJoin = 'round';
+    signatureContext.strokeStyle = '#111827';
+    if (oldData) {
+      const image = new Image();
+      image.onload = () => {
+        signatureContext.drawImage(image, 0, 0, rect.width, rect.height);
+      };
+      image.src = oldData;
+    }
+  }
+
+  function signaturePoint(event) {
+    const rect = signatureCanvas.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  }
+
+  function startSignature(event) {
+    event.preventDefault();
+    signatureDrawing = true;
+    signatureCanvas.setPointerCapture?.(event.pointerId);
+    const point = signaturePoint(event);
+    signatureContext.beginPath();
+    signatureContext.moveTo(point.x, point.y);
+    signatureContext.lineTo(point.x + 0.01, point.y + 0.01);
+    signatureContext.stroke();
+    signatureHasInk = true;
+  }
+
+  function drawSignature(event) {
+    if (!signatureDrawing) return;
+    event.preventDefault();
+    const point = signaturePoint(event);
+    signatureContext.lineTo(point.x, point.y);
+    signatureContext.stroke();
+  }
+
+  function finishSignature() {
+    if (!signatureDrawing) return;
+    signatureDrawing = false;
+    signatureHasInk = true;
+    concessionaireSignatureData = signatureCanvas.toDataURL('image/png');
+    $('signatureStatus').textContent = 'Signature captured';
+    syncAllDocuments();
+  }
+
+  signatureCanvas.addEventListener('pointerdown', startSignature);
+  signatureCanvas.addEventListener('pointermove', drawSignature);
+  signatureCanvas.addEventListener('pointerup', finishSignature);
+  signatureCanvas.addEventListener('pointercancel', finishSignature);
+  signatureCanvas.addEventListener('lostpointercapture', finishSignature);
+
+  function clearConcessionaireSignature(update = true) {
+    signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+    signatureHasInk = false;
+    concessionaireSignatureData = '';
+    $('signatureStatus').textContent = 'No signature captured';
+    if (update) syncAllDocuments();
+  }
+
+  function redrawSignaturePadFromData() {
+    signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+    signatureHasInk = Boolean(concessionaireSignatureData);
+    $('signatureStatus').textContent = signatureHasInk ? 'Saved signature loaded' : 'No signature captured';
+    if (!concessionaireSignatureData) return;
+    const image = new Image();
+    image.onload = () => {
+      signatureContext.drawImage(image, 0, 0, signatureCanvas.clientWidth, signatureCanvas.clientHeight);
+    };
+    image.src = concessionaireSignatureData;
+  }
+
   // Initialize on load
   window.addEventListener('DOMContentLoaded', () => {
+    resizeSignatureCanvas();
     renderUnifiedRecords();
     syncAllDocuments();
   });
